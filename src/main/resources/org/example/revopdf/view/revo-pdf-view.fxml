@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Cursor?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.VBox?>
+
+<BorderPane prefHeight="780.0" prefWidth="656.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/25" fx:controller="org.example.revopdf.controller.BasePdfController">
+
+    <left>
+        <VBox alignment="TOP_CENTER" opacity="0.77" spacing="10" style="-fx-background-color: #a9adb8;">
+            <padding>
+                <Insets bottom="10" left="5" right="5" top="10" />
+            </padding>
+
+            <Button graphicTextGap="0">
+                <graphic>
+                    <ImageView fitHeight="24" fitWidth="24">
+                        <Image url="@../icons/cursor.png" />
+                    </ImageView>
+                </graphic>
+            </Button>
+
+            <Button graphicTextGap="0">
+                <graphic>
+                    <ImageView fitHeight="24" fitWidth="24">
+                        <Image url="@../icons/text.png" />
+                    </ImageView>
+                </graphic>
+            </Button>
+
+            <Button graphicTextGap="0">
+                <graphic>
+                    <ImageView fitHeight="24" fitWidth="24">
+                        <Image url="@../icons/draw.png" />
+                    </ImageView>
+                </graphic>
+            </Button>
+
+            <Button graphicTextGap="0">
+                <graphic>
+                    <ImageView fitHeight="24" fitWidth="24">
+                        <Image url="@../icons/erase.png" />
+                    </ImageView>
+                </graphic>
+            </Button>
+         <cursor>
+            <Cursor fx:constant="DEFAULT" />
+         </cursor>
+        </VBox>
+    </left>
+
+    <center>
+        <ScrollPane>
+            <ImageView fx:id="pdfImageView" preserveRatio="true"/>
+        </ScrollPane>
+    </center>
+
+    <bottom>
+        <Button onAction="#onOpenPdfClick" style="-fx-font-size: 16px; -fx-padding: 10 20 10 20;" text="Open PDF" BorderPane.alignment="CENTER" />
+    </bottom>
+
+    <padding>
+        <Insets bottom="10" left="10" right="10" top="10" />
+    </padding>
+</BorderPane>
