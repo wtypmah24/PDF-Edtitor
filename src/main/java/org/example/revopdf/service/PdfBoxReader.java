@@ -1,4 +1,4 @@
-package org.example.revopdf.model;
+package org.example.revopdf.service;
 
 import java.awt.image.BufferedImage;
 import java.io.File;

@@ -9,18 +9,37 @@
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane prefHeight="780.0" prefWidth="656.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/25" fx:controller="org.example.revopdf.controller.BasePdfController">
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.layout.StackPane?>
+<BorderPane prefHeight="780.0" prefWidth="656.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/25"
+            fx:controller="org.example.revopdf.controller.PdfEditorController">
 
     <left>
         <VBox alignment="TOP_CENTER" opacity="0.77" spacing="10" style="-fx-background-color: #a9adb8;">
             <padding>
-                <Insets bottom="10" left="5" right="5" top="10" />
+                <Insets bottom="10" left="5" right="5" top="10"/>
             </padding>
 
             <Button graphicTextGap="0">
                 <graphic>
                     <ImageView fitHeight="24" fitWidth="24">
-                        <Image url="@../icons/cursor.png" />
+                        <Image url="@../icons/cursor.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
+
+            <Button onAction="#onTextToolSelected" graphicTextGap="0">
+                <graphic>
+                    <ImageView fitHeight="24" fitWidth="24">
+                        <Image url="@../icons/text.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
+
+            <Button onAction="#onDrawToolSelected" graphicTextGap="0">
+                <graphic>
+                    <ImageView fitHeight="24" fitWidth="24">
+                        <Image url="@../icons/draw.png"/>
                     </ImageView>
                 </graphic>
             </Button>
@@ -28,43 +47,32 @@
             <Button graphicTextGap="0">
                 <graphic>
                     <ImageView fitHeight="24" fitWidth="24">
-                        <Image url="@../icons/text.png" />
+                        <Image url="@../icons/erase.png"/>
                     </ImageView>
                 </graphic>
             </Button>
-
-            <Button graphicTextGap="0">
-                <graphic>
-                    <ImageView fitHeight="24" fitWidth="24">
-                        <Image url="@../icons/draw.png" />
-                    </ImageView>
-                </graphic>
-            </Button>
-
-            <Button graphicTextGap="0">
-                <graphic>
-                    <ImageView fitHeight="24" fitWidth="24">
-                        <Image url="@../icons/erase.png" />
-                    </ImageView>
-                </graphic>
-            </Button>
-         <cursor>
-            <Cursor fx:constant="DEFAULT" />
-         </cursor>
+            <cursor>
+                <Cursor fx:constant="DEFAULT"/>
+            </cursor>
         </VBox>
     </left>
 
     <center>
-        <ScrollPane>
-            <ImageView fx:id="pdfImageView" preserveRatio="true"/>
+        <ScrollPane fitToWidth="true" pannable="true">
+            <StackPane>
+                <ImageView fx:id="pdfImageView" preserveRatio="true"/>
+                <Canvas fx:id="overlayCanvas"/>
+            </StackPane>
         </ScrollPane>
     </center>
 
+
     <bottom>
-        <Button onAction="#onOpenPdfClick" style="-fx-font-size: 16px; -fx-padding: 10 20 10 20;" text="Open PDF" BorderPane.alignment="CENTER" />
+        <Button onAction="#onOpenPdfClick" style="-fx-font-size: 16px; -fx-padding: 10 20 10 20;" text="Open PDF"
+                BorderPane.alignment="CENTER"/>
     </bottom>
 
     <padding>
-        <Insets bottom="10" left="10" right="10" top="10" />
+        <Insets bottom="10" left="10" right="10" top="10"/>
     </padding>
 </BorderPane>
