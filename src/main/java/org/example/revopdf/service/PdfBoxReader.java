@@ -1,17 +1,39 @@
 package org.example.revopdf.service;
 
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.rendering.PDFRenderer;
 
 public class PdfBoxReader implements PdfReader {
-  public BufferedImage pdfToBufferedImage(File pdfFile) throws IOException {
-    try (PDDocument document = Loader.loadPDF(pdfFile)) {
-      PDFRenderer pdfRenderer = new PDFRenderer(document);
-      return pdfRenderer.renderImageWithDPI(0, 150);
+  private PDDocument document;
+
+  @Override
+  public void open(File file) throws IOException {
+    close();
+    document = Loader.loadPDF(file);
+  }
+
+  @Override
+  public void close() throws IOException {
+    if (document != null) {
+      document.close();
+      document = null;
     }
+  }
+
+  @Override
+  public int getNumberOfPages() {
+    if (document == null) {
+      throw new IllegalStateException("Document not opened");
+    }
+    return document.getNumberOfPages();
+  }
+
+  public PDDocument getDocument() {
+    if (document == null) {
+      throw new IllegalStateException("Document not opened");
+    }
+    return document;
   }
 }
