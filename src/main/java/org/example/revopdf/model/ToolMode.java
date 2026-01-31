@@ -4,5 +4,6 @@ public enum ToolMode {
   NONE,
   DRAW,
   TEXT,
-  Zoom
+  ZOOM,
+  DRAG
 }
