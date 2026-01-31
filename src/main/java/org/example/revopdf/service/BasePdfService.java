@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.IOException;
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;
-import org.example.revopdf.model.PdfReader;
 
 public class BasePdfService {
   private final PdfReader pdfReader;
