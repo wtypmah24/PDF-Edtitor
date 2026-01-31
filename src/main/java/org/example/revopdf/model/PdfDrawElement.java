@@ -6,9 +6,12 @@ import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 
 public class PdfDrawElement implements PdfElement {
+
   private final int page;
   private final List<Point2D> points = new ArrayList<>();
   private double strokeWidth = 2.0;
+
+  private static final double HIT_BOX = 5.0;
 
   public PdfDrawElement(int page) {
     this.page = page;
@@ -29,11 +32,59 @@ public class PdfDrawElement implements PdfElement {
 
     gc.setLineWidth(strokeWidth * zoom);
 
-    Point2D prev = points.getFirst();
+    Point2D prev = points.get(0);
     for (int i = 1; i < points.size(); i++) {
       Point2D curr = points.get(i);
       gc.strokeLine(prev.getX() * zoom, prev.getY() * zoom, curr.getX() * zoom, curr.getY() * zoom);
       prev = curr;
     }
+  }
+
+  @Override
+  public boolean contains(double px, double py) {
+    if (points.size() < 2) return false;
+
+    for (int i = 1; i < points.size(); i++) {
+      Point2D a = points.get(i - 1);
+      Point2D b = points.get(i);
+
+      if (distancePointToSegment(px, py, a, b) <= HIT_BOX) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @Override
+  public void move(double dx, double dy) {
+    for (int i = 0; i < points.size(); i++) {
+      Point2D p = points.get(i);
+      points.set(i, new Point2D(p.getX() + dx, p.getY() + dy));
+    }
+  }
+
+  private double distancePointToSegment(double px, double py, Point2D a, Point2D b) {
+    double dx = b.getX() - a.getX();
+    double dy = b.getY() - a.getY();
+
+    if (dx == 0 && dy == 0) {
+      dx = px - a.getX();
+      dy = py - a.getY();
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    double t = ((px - a.getX()) * dx + (py - a.getY()) * dy) / (dx * dx + dy * dy);
+    t = Math.max(0, Math.min(1, t));
+
+    double projX = a.getX() + t * dx;
+    double projY = a.getY() + t * dy;
+
+    double distX = px - projX;
+    double distY = py - projY;
+    return Math.sqrt(distX * distX + distY * distY);
+  }
+
+  public void setStrokeWidth(double strokeWidth) {
+    this.strokeWidth = strokeWidth;
   }
 }

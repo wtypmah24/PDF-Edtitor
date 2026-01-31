@@ -20,7 +20,15 @@
                 <Insets bottom="10" left="5" right="5" top="10"/>
             </padding>
 
-            <Button graphicTextGap="0">
+            <Button onAction="#onNoneToolSelected" graphicTextGap="0">
+                <graphic>
+                    <ImageView fitHeight="24" fitWidth="24">
+                        <Image url="@../icons/hand.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
+
+            <Button onAction="#onDragToolSelected" graphicTextGap="0">
                 <graphic>
                     <ImageView fitHeight="24" fitWidth="24">
                         <Image url="@../icons/cursor.png"/>
@@ -48,6 +56,13 @@
                 <graphic>
                     <ImageView fitHeight="24" fitWidth="24">
                         <Image url="@../icons/erase.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
+            <Button graphicTextGap="0">
+                <graphic>
+                    <ImageView fitHeight="24" fitWidth="24">
+                        <Image url="@../icons/zoom.png"/>
                     </ImageView>
                 </graphic>
             </Button>

@@ -32,6 +32,18 @@ public class PdfEditorController {
   }
 
   @FXML
+  private void onNoneToolSelected() {
+    activeTool = ToolMode.NONE;
+    updateCursor();
+  }
+
+  @FXML
+  private void onDragToolSelected() {
+    activeTool = ToolMode.DRAG;
+    updateCursor();
+  }
+
+  @FXML
   private void onTextToolSelected() {
     activeTool = ToolMode.TEXT;
     updateCursor();
@@ -46,6 +58,11 @@ public class PdfEditorController {
 
   private PdfDocumentState documentState;
   private PdfDrawElement currentDrawElement;
+
+  private PdfElement selectedElement;
+  private double lastMouseX;
+  private double lastMouseY;
+
   private double zoom = 1.0;
 
   @FXML
@@ -102,21 +119,58 @@ public class PdfEditorController {
         e -> {
           if (documentState == null) return;
 
+          double x = e.getX() / zoom;
+          double y = e.getY() / zoom;
+
           switch (activeTool) {
             case DRAW -> startDrawing(e);
             case TEXT -> placeText(e);
+            case DRAG -> startDragging(x, y);
           }
         });
 
     overlayCanvas.setOnMouseDragged(
         e -> {
+          double x = e.getX() / zoom;
+          double y = e.getY() / zoom;
+
           if (activeTool == ToolMode.DRAW && currentDrawElement != null) {
-            currentDrawElement.addPoint(e.getX() / zoom, e.getY() / zoom);
+            currentDrawElement.addPoint(x, y);
+            redrawOverlay();
+          }
+
+          if (activeTool == ToolMode.DRAG && selectedElement != null) {
+            double dx = x - lastMouseX;
+            double dy = y - lastMouseY;
+
+            selectedElement.move(dx, dy);
+
+            lastMouseX = x;
+            lastMouseY = y;
+
             redrawOverlay();
           }
         });
 
     overlayCanvas.setOnMouseReleased(e -> currentDrawElement = null);
+  }
+
+  private void startDragging(double x, double y) {
+    selectedElement = null;
+
+    for (PdfElement element : documentState.getElementsForPage(documentState.getCurrentPage())) {
+      if (element.contains(x, y)) {
+        selectedElement = element;
+        break;
+      }
+    }
+
+    lastMouseX = x;
+    lastMouseY = y;
+
+    if (selectedElement != null) {
+      overlayCanvas.setCursor(Cursor.CLOSED_HAND);
+    }
   }
 
   private void startDrawing(MouseEvent e) {
@@ -145,6 +199,8 @@ public class PdfEditorController {
     switch (activeTool) {
       case DRAW -> overlayCanvas.setCursor(Cursor.CROSSHAIR);
       case TEXT -> overlayCanvas.setCursor(Cursor.TEXT);
+      case DRAG -> overlayCanvas.setCursor(Cursor.OPEN_HAND);
+      case NONE -> overlayCanvas.setCursor(Cursor.HAND);
       default -> overlayCanvas.setCursor(Cursor.DEFAULT);
     }
   }
