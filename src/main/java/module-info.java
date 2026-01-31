@@ -12,4 +12,5 @@ module org.example.revopdf {
 
     requires org.apache.pdfbox;
     requires javafx.graphics;
+    requires org.example.revopdf;
 }

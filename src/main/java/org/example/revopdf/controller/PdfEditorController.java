@@ -14,8 +14,9 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.FileChooser;
 import org.example.revopdf.model.*;
-import org.example.revopdf.render.PdfOverlayRenderer;
-import org.example.revopdf.service.BasePdfService;
+import org.example.revopdf.render.adapter.PdfOverlayRendererAdapter;
+import org.example.revopdf.render.adapter.PdfRendererAdapter;
+import org.example.revopdf.service.PdfDocumentService;
 import org.example.revopdf.service.PdfBoxReader;
 
 public class PdfEditorController {
@@ -36,8 +37,12 @@ public class PdfEditorController {
     updateCursor();
   }
 
-  private final BasePdfService basePdfService = new BasePdfService(new PdfBoxReader());
-  private final PdfOverlayRenderer overlayRenderer = new PdfOverlayRenderer();
+  private final PdfBoxReader pdfBoxReader = new PdfBoxReader();
+  private final PdfRendererAdapter pdfRenderer = new PdfRendererAdapter(pdfBoxReader);
+  private final PdfDocumentService pdfDocumentService =
+      new PdfDocumentService(pdfBoxReader, pdfRenderer);
+
+  private final PdfOverlayRendererAdapter overlayRenderer = new PdfOverlayRendererAdapter();
 
   private PdfDocumentState documentState;
   private PdfDrawElement currentDrawElement;
@@ -69,10 +74,11 @@ public class PdfEditorController {
     if (file == null) return;
 
     try {
-      Image image = basePdfService.renderFirstPage(file);
-      pdfImageView.setImage(image);
+      pdfDocumentService.openDocument(file);
+      Image pageImage = pdfDocumentService.renderPage(0, 150);
+      pdfImageView.setImage(pageImage);
 
-      documentState = new PdfDocumentState(file); // создаём модель документа
+      documentState = new PdfDocumentState(file);
       redrawOverlay();
 
     } catch (IOException e) {
