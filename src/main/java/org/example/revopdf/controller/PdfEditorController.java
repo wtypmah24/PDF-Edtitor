@@ -16,8 +16,8 @@ import javafx.stage.FileChooser;
 import org.example.revopdf.model.*;
 import org.example.revopdf.render.adapter.PdfOverlayRendererAdapter;
 import org.example.revopdf.render.adapter.PdfRendererAdapter;
-import org.example.revopdf.service.PdfDocumentService;
 import org.example.revopdf.service.PdfBoxReader;
+import org.example.revopdf.service.PdfDocumentService;
 
 public class PdfEditorController {
 
@@ -49,6 +49,40 @@ public class PdfEditorController {
     updateCursor();
   }
 
+  @FXML
+  private void onZoomIn() {
+    if (documentState == null) return;
+
+    try {
+      documentState.zoomIn();
+      rerenderPdfPage();
+      redrawOverlay();
+    } catch (IOException e) {
+      Alert alert = new Alert(Alert.AlertType.ERROR);
+      alert.setTitle("Error");
+      alert.setHeaderText(e.getMessage());
+      alert.setContentText(e.getMessage());
+      alert.showAndWait();
+    }
+  }
+
+  @FXML
+  private void onZoomOut() {
+    if (documentState == null) return;
+
+    documentState.zoomOut();
+    try {
+      rerenderPdfPage();
+    } catch (IOException e) {
+      Alert alert = new Alert(Alert.AlertType.ERROR);
+      alert.setTitle("Error");
+      alert.setHeaderText(e.getMessage());
+      alert.setContentText(e.getMessage());
+      alert.showAndWait();
+    }
+    redrawOverlay();
+  }
+
   private final PdfBoxReader pdfBoxReader = new PdfBoxReader();
   private final PdfRendererAdapter pdfRenderer = new PdfRendererAdapter(pdfBoxReader);
   private final PdfDocumentService pdfDocumentService =
@@ -63,8 +97,6 @@ public class PdfEditorController {
   private double lastMouseX;
   private double lastMouseY;
 
-  private double zoom = 1.0;
-
   @FXML
   public void initialize() {
     pdfImageView
@@ -78,8 +110,6 @@ public class PdfEditorController {
 
     setupCanvasHandlers();
   }
-
-  // ================= PDF OPEN =================
 
   @FXML
   protected void onOpenPdfClick() {
@@ -104,13 +134,20 @@ public class PdfEditorController {
     }
   }
 
-  // ================= RENDER OVERLAY =================
-
   private void redrawOverlay() {
     if (documentState == null) return;
 
     GraphicsContext gc = overlayCanvas.getGraphicsContext2D();
-    overlayRenderer.renderPage(documentState, documentState.getCurrentPage(), gc, zoom);
+    overlayRenderer.renderPage(
+        documentState, documentState.getCurrentPage(), gc, documentState.getZoom());
+  }
+
+  private void rerenderPdfPage() throws IOException {
+    int page = documentState.getCurrentPage();
+    double zoom = documentState.getZoom();
+
+    Image pageImage = pdfDocumentService.renderPage(page, 150 * zoom);
+    pdfImageView.setImage(pageImage);
   }
 
   private void setupCanvasHandlers() {
@@ -119,8 +156,8 @@ public class PdfEditorController {
         e -> {
           if (documentState == null) return;
 
-          double x = e.getX() / zoom;
-          double y = e.getY() / zoom;
+          double x = e.getX() / documentState.getZoom();
+          double y = e.getY() / documentState.getZoom();
 
           switch (activeTool) {
             case DRAW -> startDrawing(e);
@@ -131,8 +168,8 @@ public class PdfEditorController {
 
     overlayCanvas.setOnMouseDragged(
         e -> {
-          double x = e.getX() / zoom;
-          double y = e.getY() / zoom;
+          double x = e.getX() / documentState.getZoom();
+          double y = e.getY() / documentState.getZoom();
 
           if (activeTool == ToolMode.DRAW && currentDrawElement != null) {
             currentDrawElement.addPoint(x, y);
@@ -175,7 +212,8 @@ public class PdfEditorController {
 
   private void startDrawing(MouseEvent e) {
     currentDrawElement = new PdfDrawElement(documentState.getCurrentPage());
-    currentDrawElement.addPoint(e.getX() / zoom, e.getY() / zoom);
+    currentDrawElement.addPoint(
+        e.getX() / documentState.getZoom(), e.getY() / documentState.getZoom());
     documentState.addElement(currentDrawElement);
   }
 
@@ -189,7 +227,10 @@ public class PdfEditorController {
             text -> {
               PdfTextElement textElement =
                   new PdfTextElement(
-                      documentState.getCurrentPage(), text, e.getX() / zoom, e.getY() / zoom);
+                      documentState.getCurrentPage(),
+                      text,
+                      e.getX() / documentState.getZoom(),
+                      e.getY() / documentState.getZoom());
               documentState.addElement(textElement);
               redrawOverlay();
             });

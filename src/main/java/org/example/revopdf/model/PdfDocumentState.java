@@ -8,6 +8,7 @@ public class PdfDocumentState {
 
   private final File sourceFile;
   private int currentPage = 0;
+  private double zoom = 1.0;
 
   private final List<PdfElement> elements = new ArrayList<>();
 
@@ -41,5 +42,21 @@ public class PdfDocumentState {
 
   public List<PdfElement> getAllElements() {
     return List.copyOf(elements);
+  }
+
+  public double getZoom() {
+    return zoom;
+  }
+
+  public void setZoom(double zoom) {
+    this.zoom = Math.max(0.2, Math.min(5.0, zoom));
+  }
+
+  public void zoomIn() {
+    setZoom(zoom * 1.1);
+  }
+
+  public void zoomOut() {
+    setZoom(zoom / 1.1);
   }
 }
