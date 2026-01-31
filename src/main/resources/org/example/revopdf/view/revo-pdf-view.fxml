@@ -59,10 +59,17 @@
                     </ImageView>
                 </graphic>
             </Button>
-            <Button graphicTextGap="0">
+            <Button onAction="#onZoomIn" graphicTextGap="0">
                 <graphic>
                     <ImageView fitHeight="24" fitWidth="24">
-                        <Image url="@../icons/zoom.png"/>
+                        <Image url="@../icons/zoom-in.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
+            <Button onAction="#onZoomOut" graphicTextGap="0">
+                <graphic>
+                    <ImageView fitHeight="24" fitWidth="24">
+                        <Image url="@../icons/zoom-out.png"/>
                     </ImageView>
                 </graphic>
             </Button>
