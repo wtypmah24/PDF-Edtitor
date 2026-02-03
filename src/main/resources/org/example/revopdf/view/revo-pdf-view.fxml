@@ -8,11 +8,38 @@
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
 <?import javafx.scene.layout.VBox?>
-
 <?import javafx.scene.canvas.Canvas?>
 <?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ColorPicker?>
+<?import javafx.scene.control.Spinner?>
+
+<?import javafx.scene.control.ComboBox?>
 <BorderPane prefHeight="780.0" prefWidth="656.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/25"
             fx:controller="org.example.revopdf.controller.PdfEditorController">
+
+    <top>
+        <StackPane>
+
+            <HBox fx:id="textToolbar" spacing="10" alignment="CENTER_LEFT"
+                  style="-fx-padding: 8; -fx-background-color: #b3b4b8;">
+
+                <Label text="Font:"/>
+                <ComboBox fx:id="fontFamilyCombo" prefWidth="160"/>
+
+                <Label text="Font size:"/>
+                <Spinner fx:id="fontSizeSpinner" prefWidth="80"/>
+
+                <Label text="Color:"/>
+                <ColorPicker fx:id="textColorPicker"/>
+
+                <Button text="Edit Text" onAction="#onEditSelectedText"/>
+            </HBox>
+
+        </StackPane>
+    </top>
+
 
     <left>
         <VBox alignment="TOP_CENTER" opacity="0.77" spacing="10" style="-fx-background-color: #a9adb8;">
@@ -20,7 +47,7 @@
                 <Insets bottom="10" left="5" right="5" top="10"/>
             </padding>
 
-            <Button onAction="#onNoneToolSelected" graphicTextGap="0">
+            <Button onAction="#onDragToolSelected" graphicTextGap="0">
                 <graphic>
                     <ImageView fitHeight="24" fitWidth="24">
                         <Image url="@../icons/hand.png"/>
@@ -28,7 +55,15 @@
                 </graphic>
             </Button>
 
-            <Button onAction="#onDragToolSelected" graphicTextGap="0">
+            <Button onAction="#onNoneToolSelected" graphicTextGap="0">
+                <graphic>
+                    <ImageView fitHeight="24" fitWidth="24">
+                        <Image url="@../icons/edit.png"/>
+                    </ImageView>
+                </graphic>
+            </Button>
+
+            <Button onAction="#onNoneToolSelected" graphicTextGap="0">
                 <graphic>
                     <ImageView fitHeight="24" fitWidth="24">
                         <Image url="@../icons/cursor.png"/>

@@ -2,6 +2,9 @@ package org.example.revopdf.model;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import javafx.geometry.BoundingBox;
+import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 
@@ -61,6 +64,21 @@ public class PdfDrawElement implements PdfElement {
       Point2D p = points.get(i);
       points.set(i, new Point2D(p.getX() + dx, p.getY() + dy));
     }
+  }
+
+  @Override
+  public Bounds getBounds() {
+    double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE;
+    double maxX = Double.MIN_VALUE, maxY = Double.MIN_VALUE;
+
+    for (Point2D p : points) {
+      minX = Math.min(minX, p.getX());
+      minY = Math.min(minY, p.getY());
+      maxX = Math.max(maxX, p.getX());
+      maxY = Math.max(maxY, p.getY());
+    }
+
+    return new BoundingBox(minX, minY, maxX - minX, maxY - minY);
   }
 
   private double distancePointToSegment(double px, double py, Point2D a, Point2D b) {

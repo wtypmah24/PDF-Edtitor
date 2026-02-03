@@ -6,7 +6,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.example.revopdf.render.PdfDocumentRenderer;
-import org.example.revopdf.service.PdfBoxReader;
+import org.example.revopdf.service.adapter.PdfBoxReader;
 
 public class PdfRendererAdapter implements PdfDocumentRenderer {
 

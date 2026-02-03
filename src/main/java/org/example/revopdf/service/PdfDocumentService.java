@@ -32,4 +32,12 @@ public class PdfDocumentService {
   public Image renderPage(int page, double dpi) throws IOException {
     return pdfRenderer.renderPage(page, dpi);
   }
+
+  public File getCurrentFile() {
+    return currentFile;
+  }
+
+  public void setCurrentFile(File currentFile) {
+    this.currentFile = currentFile;
+  }
 }

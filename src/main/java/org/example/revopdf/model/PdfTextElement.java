@@ -1,6 +1,9 @@
 package org.example.revopdf.model;
 
+import javafx.geometry.BoundingBox;
+import javafx.geometry.Bounds;
 import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
 public class PdfTextElement implements PdfElement {
@@ -10,8 +13,9 @@ public class PdfTextElement implements PdfElement {
   private double x;
   private double y;
 
-  private double width = 0;
-  private double height = 0;
+  private String fontFamily = "Arial";
+  private double fontSize = 12;
+  private Color color = Color.BLACK;
 
   public PdfTextElement(int page, String text, double x, double y) {
     this.page = page;
@@ -27,15 +31,15 @@ public class PdfTextElement implements PdfElement {
 
   @Override
   public void render(GraphicsContext gc, double zoom) {
+    gc.setFill(color);
+    gc.setFont(Font.font(fontFamily, fontSize * zoom));
     gc.fillText(text, x * zoom, y * zoom);
-
-    width = text.length() * 7; // Aprx. TODO: FIX IT
-    height = 12;
   }
 
   @Override
   public boolean contains(double px, double py) {
-    return px >= x && px <= x + width && py <= y && py >= y - height;
+    Bounds b = getBounds();
+    return b.contains(px, py);
   }
 
   @Override
@@ -44,7 +48,43 @@ public class PdfTextElement implements PdfElement {
     y += dy;
   }
 
+  @Override
+  public Bounds getBounds() {
+    double width = text.length() * fontSize * 0.55;
+    double height = fontSize;
+
+    return new BoundingBox(x, y - height, width, height);
+  }
+
   public void setText(String text) {
     this.text = text;
+  }
+
+  public String getText() {
+    return text;
+  }
+
+  public void setFontSize(double fontSize) {
+    this.fontSize = fontSize;
+  }
+
+  public double getFontSize() {
+    return fontSize;
+  }
+
+  public void setFontFamily(String fontFamily) {
+    this.fontFamily = fontFamily;
+  }
+
+  public String getFontFamily() {
+    return fontFamily;
+  }
+
+  public void setColor(Color color) {
+    this.color = color;
+  }
+
+  public Color getColor() {
+    return color;
   }
 }
