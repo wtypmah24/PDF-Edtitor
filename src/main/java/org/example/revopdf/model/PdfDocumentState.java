@@ -11,6 +11,7 @@ public class PdfDocumentState {
   private double zoom = 1.0;
 
   private final List<PdfElement> elements = new ArrayList<>();
+  private PdfElement selectedElement;
 
   public PdfDocumentState(File sourceFile) {
     this.sourceFile = sourceFile;
@@ -58,5 +59,27 @@ public class PdfDocumentState {
 
   public void zoomOut() {
     setZoom(zoom / 1.1);
+  }
+
+  public PdfElement getSelectedElement() {
+    return selectedElement;
+  }
+
+  public void setSelectedElement(PdfElement selectedElement) {
+    this.selectedElement = selectedElement;
+  }
+
+  public void clearSelection() {
+    this.selectedElement = null;
+  }
+
+  public PdfElement findElementAt(double x, double y) {
+    var elements = getElementsForPage(currentPage);
+    for (int i = elements.size() - 1; i >= 0; i--) {
+      if (elements.get(i).contains(x, y)) {
+        return elements.get(i);
+      }
+    }
+    return null;
   }
 }

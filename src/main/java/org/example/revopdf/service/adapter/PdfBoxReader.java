@@ -1,9 +1,10 @@
-package org.example.revopdf.service;
+package org.example.revopdf.service.adapter;
 
 import java.io.File;
 import java.io.IOException;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
+import org.example.revopdf.service.PdfReader;
 
 public class PdfBoxReader implements PdfReader {
   private PDDocument document;
