@@ -22,6 +22,9 @@ public class PdfEditorController {
   @FXML private ColorPicker textColorPicker;
   @FXML private ComboBox<String> fontFamilyCombo;
 
+  @FXML private HBox eraserToolbar;
+  @FXML private ComboBox<Integer> eraserSizeCombo;
+
   @FXML
   protected void onOpenPdfClick() {
     interactionManager.openPdf();
@@ -30,6 +33,11 @@ public class PdfEditorController {
   @FXML
   private void onDrawToolSelected() {
     interactionManager.setTool(ToolMode.DRAW);
+  }
+
+  @FXML
+  private void onEraseToolSelected() {
+    interactionManager.setTool(ToolMode.ERASE);
   }
 
   @FXML
@@ -122,16 +130,33 @@ public class PdfEditorController {
               }
             });
 
+    eraserSizeCombo.getItems().addAll(5, 10, 15, 20, 30, 40, 60, 80);
+    eraserSizeCombo.setValue(20);
+
+    eraserSizeCombo
+        .valueProperty()
+        .addListener(
+            (obs, o, n) -> {
+              if (n != null) {
+                interactionManager.setEraserRadius(n);
+              }
+            });
+
     updateToolbars();
   }
 
   private void updateToolbars() {
-    boolean textSelected =
-        interactionManager.getDocumentState() != null
-            && interactionManager.getDocumentState().getSelectedElement() instanceof PdfTextElement;
+    var state = interactionManager.getDocumentState();
+
+    boolean textSelected = state != null && state.getSelectedElement() instanceof PdfTextElement;
+
+    boolean eraserActive = interactionManager.getActiveTool() == ToolMode.ERASE;
 
     textToolbar.setVisible(textSelected);
     textToolbar.setManaged(textSelected);
+
+    eraserToolbar.setVisible(eraserActive);
+    eraserToolbar.setManaged(eraserActive);
   }
 
   private void syncTextToolbarWithSelection() {
