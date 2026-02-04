@@ -42,6 +42,9 @@ public class PdfEditorInteractionManager {
   private Runnable selectionChangedCallback = () -> {};
   private Runnable textSelectionChangedCallback;
 
+  private PdfWhiteoutBrushElement currentEraserStroke;
+  private double eraserRadius = 20;
+
   public void init(
       Canvas canvas,
       ImageView pdfImageView,
@@ -65,8 +68,12 @@ public class PdfEditorInteractionManager {
   }
 
   public void setTool(ToolMode tool) {
+    if (tool == ToolMode.ERASE) {
+      currentEraserStroke = new PdfWhiteoutBrushElement(documentState.getCurrentPage());
+    }
     this.activeTool = tool;
     updateCursor();
+    selectionChangedCallback.run();
   }
 
   private void setupHandlers() {
@@ -102,6 +109,7 @@ public class PdfEditorInteractionManager {
           switch (activeTool) {
             case DRAW -> startDrawing(x, y);
             case TEXT -> placeText(x, y);
+            case ERASE -> startErasing(x, y);
             case DRAG -> startDragging(x, y);
             case NONE -> selectElement(x, y);
           }
@@ -111,11 +119,18 @@ public class PdfEditorInteractionManager {
         e -> {
           e.consume();
 
+          if (documentState == null) return;
+
           double x = e.getX() / documentState.getZoom();
           double y = e.getY() / documentState.getZoom();
 
           if (activeTool == ToolMode.DRAW && currentDrawElement != null) {
             currentDrawElement.addPoint(x, y);
+            redrawCallback.run();
+          }
+
+          if (activeTool == ToolMode.ERASE && currentEraserStroke != null) {
+            currentEraserStroke.addPoint(x, y);
             redrawCallback.run();
           }
 
@@ -130,6 +145,7 @@ public class PdfEditorInteractionManager {
     canvas.setOnMouseReleased(
         e -> {
           currentDrawElement = null;
+          currentEraserStroke = null;
           draggedElement = null;
           updateCursor();
         });
@@ -169,7 +185,7 @@ public class PdfEditorInteractionManager {
     documentState.setSelectedElement(documentState.findElementAt(x, y));
     documentState.setSelectedElement(documentState.findElementAt(x, y));
     redrawCallback.run();
-    selectionChangedCallback.run(); // ВОТ ЭТО
+    selectionChangedCallback.run();
     textSelectionChangedCallback.run();
     redrawCallback.run();
   }
@@ -287,12 +303,29 @@ public class PdfEditorInteractionManager {
     }
   }
 
+  private void startErasing(double x, double y) {
+    currentEraserStroke = new PdfWhiteoutBrushElement(documentState.getCurrentPage());
+    currentEraserStroke.setRadius(eraserRadius);
+    currentEraserStroke.addPoint(x, y);
+
+    documentState.addElement(currentEraserStroke);
+  }
+
+  public void setEraserRadius(double radius) {
+    this.eraserRadius = radius;
+  }
+
+  public ToolMode getActiveTool() {
+    return activeTool;
+  }
+
   private void updateCursor() {
     switch (activeTool) {
       case DRAW -> canvas.setCursor(Cursor.CROSSHAIR);
       case TEXT -> canvas.setCursor(Cursor.TEXT);
       case DRAG -> canvas.setCursor(Cursor.OPEN_HAND);
       case NONE -> canvas.setCursor(Cursor.HAND);
+      case ERASE -> canvas.setCursor(Cursor.DISAPPEAR);
     }
   }
 }
