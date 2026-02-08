@@ -157,7 +157,7 @@ public class PdfEditorInteractionManager {
   }
 
   private void startDrawing(double x, double y) {
-    currentDrawElement = new PdfDrawElement(documentState.getCurrentPage());
+    currentDrawElement = new PdfDrawElement(documentState, documentState.getCurrentPage());
     currentDrawElement.addPoint(x, y);
     documentState.addElement(currentDrawElement);
   }
