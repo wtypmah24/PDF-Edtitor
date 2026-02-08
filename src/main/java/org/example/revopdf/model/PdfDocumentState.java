@@ -1,33 +1,84 @@
 package org.example.revopdf.model;
 
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.pdmodel.PDPage;
+import org.apache.pdfbox.pdmodel.common.PDRectangle;
+
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class PdfDocumentState {
+  private static final double PT_TO_PX = 150 / 72.0;
 
   private final File sourceFile;
+
   private int currentPage = 0;
   private double zoom = 1.0;
+
+  // PDF (pt)
+  private final double pageWidthPt;
+  private final double pageHeightPt;
+
+  // Canvas (px)
+  private double canvasWidthPx;
+  private double canvasHeightPx;
 
   private final List<PdfElement> elements = new ArrayList<>();
   private PdfElement selectedElement;
 
   public PdfDocumentState(File sourceFile) {
     this.sourceFile = sourceFile;
+    try (PDDocument document = Loader.loadPDF(sourceFile)) {
+      PDPage page = document.getPage(0);
+      PDRectangle mb = page.getMediaBox();
+      this.pageWidthPt = mb.getWidth();
+      this.pageHeightPt = mb.getHeight();
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
   }
 
-  public File getSourceFile() {
-    return sourceFile;
+  // ---------- canvas ----------
+
+  public void updateCanvasSize(double width, double height) {
+    this.canvasWidthPx = width;
+    this.canvasHeightPx = height;
   }
 
-  public int getCurrentPage() {
-    return currentPage;
+  // ---------- coord mapping ----------
+
+  public double canvasToPdfX(double canvasX) {
+    System.out.println("canvasWidthPx:  " + canvasWidthPx + ", pageWidthPt: " + pageWidthPt);
+    return (canvasX / canvasWidthPx) * pageWidthPt;
   }
 
-  public void setCurrentPage(int currentPage) {
-    this.currentPage = currentPage;
+  public double canvasToPdfY(double canvasY) {
+    System.out.println(
+        "canvasHeightPx:  "
+            + canvasHeightPx
+            + ", canvasHeightPx: "
+            + canvasHeightPx
+            + ", pageHeightPt: "
+            + pageHeightPt);
+    return ((canvasHeightPx - canvasY) / canvasHeightPx) * pageHeightPt;
   }
+
+  public double ptToPx(double pt) {
+    return pt * PT_TO_PX * zoom;
+  }
+
+  public double pdfToCanvasX(double pdfX) {
+    return (pdfX / pageWidthPt) * canvasWidthPx;
+  }
+
+  public double pdfToCanvasY(double pdfY) {
+    return canvasHeightPx - (pdfY / pageHeightPt) * canvasHeightPx;
+  }
+
+  // ---------- elements ----------
 
   public void addElement(PdfElement element) {
     elements.add(element);
@@ -41,24 +92,41 @@ public class PdfDocumentState {
     return elements.stream().filter(e -> e.getPage() == page).toList();
   }
 
-  public List<PdfElement> getAllElements() {
-    return List.copyOf(elements);
+  public PdfElement findElementAtPdf(double x, double y) {
+    var list = getElementsForPage(currentPage);
+    for (int i = list.size() - 1; i >= 0; i--) {
+      if (list.get(i).contains(x, y)) {
+        return list.get(i);
+      }
+    }
+    return null;
   }
+
+  public PdfElement findElementAtCanvas(double x, double y) {
+    double pdfX = canvasToPdfX(x);
+    double pdfY = canvasToPdfY(y);
+
+    var list = getElementsForPage(currentPage);
+    for (int i = list.size() - 1; i >= 0; i--) {
+      if (list.get(i).contains(pdfX, pdfY)) {
+        return list.get(i);
+      }
+    }
+    return null;
+  }
+
+  // ---------- misc ----------
 
   public double getZoom() {
     return zoom;
   }
 
-  public void setZoom(double zoom) {
-    this.zoom = Math.max(0.2, Math.min(5.0, zoom));
-  }
-
   public void zoomIn() {
-    setZoom(zoom * 1.1);
+    zoom = Math.min(zoom * 1.1, 5.0);
   }
 
   public void zoomOut() {
-    setZoom(zoom / 1.1);
+    zoom = Math.max(zoom / 1.1, 0.2);
   }
 
   public PdfElement getSelectedElement() {
@@ -73,13 +141,11 @@ public class PdfDocumentState {
     this.selectedElement = null;
   }
 
-  public PdfElement findElementAt(double x, double y) {
-    var elements = getElementsForPage(currentPage);
-    for (int i = elements.size() - 1; i >= 0; i--) {
-      if (elements.get(i).contains(x, y)) {
-        return elements.get(i);
-      }
-    }
-    return null;
+  public int getCurrentPage() {
+    return currentPage;
+  }
+
+  public File getSourceFile() {
+    return sourceFile;
   }
 }

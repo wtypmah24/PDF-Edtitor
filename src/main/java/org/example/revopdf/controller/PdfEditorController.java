@@ -6,8 +6,13 @@ import javafx.scene.control.*;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Font;
+import javafx.stage.FileChooser;
 import org.example.revopdf.manager.PdfEditorInteractionManager;
 import org.example.revopdf.model.*;
+import org.example.revopdf.service.PdfSaveService;
+
+import java.io.File;
+import java.io.IOException;
 
 public class PdfEditorController {
 
@@ -80,6 +85,27 @@ public class PdfEditorController {
               textElement.setText(newText);
               redrawOverlay();
             });
+  }
+
+  @FXML
+  private void onSavePdfClick() {
+    FileChooser fc = new FileChooser();
+    fc.setTitle("Save PDF");
+    fc.getExtensionFilters().add(new FileChooser.ExtensionFilter("PDF Files", "*.pdf"));
+
+    File target = fc.showSaveDialog(pdfImageView.getScene().getWindow());
+    if (target == null) return;
+
+    try {
+      new PdfSaveService()
+          .save(
+              interactionManager.getDocumentState().getSourceFile(),
+              target,
+              interactionManager.getDocumentState());
+
+    } catch (IOException e) {
+      new Alert(Alert.AlertType.ERROR, "Save failed: " + e.getMessage()).showAndWait();
+    }
   }
 
   @FXML

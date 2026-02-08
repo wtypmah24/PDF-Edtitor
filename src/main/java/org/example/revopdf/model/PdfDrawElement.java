@@ -102,6 +102,14 @@ public class PdfDrawElement implements PdfElement {
     return Math.sqrt(distX * distX + distY * distY);
   }
 
+  public List<Point2D> getPoints() {
+    return points;
+  }
+
+  public double getStrokeWidth() {
+    return strokeWidth;
+  }
+
   public void setStrokeWidth(double strokeWidth) {
     this.strokeWidth = strokeWidth;
   }

@@ -63,4 +63,12 @@ public class PdfWhiteoutBrushElement implements PdfElement {
   public void setRadius(double radius) {
     this.radius = radius;
   }
+
+  public List<Point2D> getPoints() {
+    return points;
+  }
+
+  public double getRadius() {
+    return radius;
+  }
 }
