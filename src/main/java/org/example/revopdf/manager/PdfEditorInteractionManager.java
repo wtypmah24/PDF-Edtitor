@@ -1,5 +1,7 @@
 package org.example.revopdf.manager;
 
+import java.io.File;
+import java.io.IOException;
 import javafx.geometry.Bounds;
 import javafx.scene.Cursor;
 import javafx.scene.canvas.Canvas;
@@ -17,9 +19,6 @@ import org.example.revopdf.render.adapter.PdfOverlayRendererAdapter;
 import org.example.revopdf.render.adapter.PdfRendererAdapter;
 import org.example.revopdf.service.PdfDocumentService;
 import org.example.revopdf.service.adapter.PdfBoxReader;
-
-import java.io.File;
-import java.io.IOException;
 
 public class PdfEditorInteractionManager {
   private final PdfOverlayRendererAdapter overlayRenderer = new PdfOverlayRendererAdapter();
@@ -69,7 +68,8 @@ public class PdfEditorInteractionManager {
 
   public void setTool(ToolMode tool) {
     if (tool == ToolMode.ERASE) {
-      currentEraserStroke = new PdfWhiteoutBrushElement(documentState.getCurrentPage());
+      currentEraserStroke =
+          new PdfWhiteoutBrushElement(documentState, documentState.getCurrentPage());
     }
     this.activeTool = tool;
     updateCursor();
@@ -103,41 +103,46 @@ public class PdfEditorInteractionManager {
         e -> {
           if (documentState == null) return;
 
-          double x = e.getX() / documentState.getZoom();
-          double y = e.getY() / documentState.getZoom();
+          double canvasX = e.getX() / documentState.getZoom();
+          double canvasY = e.getY() / documentState.getZoom();
+
+          double pdfX = documentState.canvasToPdfX(canvasX);
+          double pdfY = documentState.canvasToPdfY(canvasY);
 
           switch (activeTool) {
-            case DRAW -> startDrawing(x, y);
-            case TEXT -> placeText(x, y);
-            case ERASE -> startErasing(x, y);
-            case DRAG -> startDragging(x, y);
-            case NONE -> selectElement(x, y);
+            case DRAW -> startDrawing(pdfX, pdfY);
+            case TEXT -> placeText(pdfX, pdfY);
+            case ERASE -> startErasing(pdfX, pdfY);
+            case DRAG -> startDragging(pdfX, pdfY);
+            case NONE -> selectElement(canvasX, canvasY);
           }
         });
 
     canvas.setOnMouseDragged(
         e -> {
           e.consume();
-
           if (documentState == null) return;
 
-          double x = e.getX() / documentState.getZoom();
-          double y = e.getY() / documentState.getZoom();
+          double canvasX = e.getX() / documentState.getZoom();
+          double canvasY = e.getY() / documentState.getZoom();
+
+          double pdfX = documentState.canvasToPdfX(canvasX);
+          double pdfY = documentState.canvasToPdfY(canvasY);
 
           if (activeTool == ToolMode.DRAW && currentDrawElement != null) {
-            currentDrawElement.addPoint(x, y);
+            currentDrawElement.addPoint(pdfX, pdfY);
             redrawCallback.run();
           }
 
           if (activeTool == ToolMode.ERASE && currentEraserStroke != null) {
-            currentEraserStroke.addPoint(x, y);
+            currentEraserStroke.addPoint(pdfX, pdfY);
             redrawCallback.run();
           }
 
           if (activeTool == ToolMode.DRAG && draggedElement != null) {
-            draggedElement.move(x - lastMouseX, y - lastMouseY);
-            lastMouseX = x;
-            lastMouseY = y;
+            draggedElement.move(pdfX - lastMouseX, pdfY - lastMouseY);
+            lastMouseX = pdfX;
+            lastMouseY = pdfY;
             redrawCallback.run();
           }
         });
@@ -152,7 +157,7 @@ public class PdfEditorInteractionManager {
   }
 
   private void startDrawing(double x, double y) {
-    currentDrawElement = new PdfDrawElement(documentState.getCurrentPage());
+    currentDrawElement = new PdfDrawElement(documentState, documentState.getCurrentPage());
     currentDrawElement.addPoint(x, y);
     documentState.addElement(currentDrawElement);
   }
@@ -166,15 +171,15 @@ public class PdfEditorInteractionManager {
         .ifPresent(
             text -> {
               documentState.addElement(
-                  new PdfTextElement(documentState.getCurrentPage(), text, x, y));
+                  new PdfTextElement(documentState, documentState.getCurrentPage(), text, x, y));
               redrawCallback.run();
             });
   }
 
-  private void startDragging(double x, double y) {
-    draggedElement = documentState.findElementAt(x, y);
-    lastMouseX = x;
-    lastMouseY = y;
+  private void startDragging(double pdfX, double pdfY) {
+    draggedElement = documentState.findElementAtPdf(pdfX, pdfY);
+    lastMouseX = pdfX;
+    lastMouseY = pdfY;
 
     if (draggedElement != null) {
       canvas.setCursor(Cursor.CLOSED_HAND);
@@ -182,8 +187,8 @@ public class PdfEditorInteractionManager {
   }
 
   private void selectElement(double x, double y) {
-    documentState.setSelectedElement(documentState.findElementAt(x, y));
-    documentState.setSelectedElement(documentState.findElementAt(x, y));
+    documentState.setSelectedElement(documentState.findElementAtCanvas(x, y));
+    documentState.setSelectedElement(documentState.findElementAtCanvas(x, y));
     redrawCallback.run();
     selectionChangedCallback.run();
     textSelectionChangedCallback.run();
@@ -265,6 +270,7 @@ public class PdfEditorInteractionManager {
       pdfImageView.setImage(pageImage);
 
       documentState = new PdfDocumentState(file);
+      documentState.updateCanvasSize(canvas.getWidth(), canvas.getHeight());
       redrawCallback.run();
 
     } catch (IOException e) {
@@ -304,7 +310,8 @@ public class PdfEditorInteractionManager {
   }
 
   private void startErasing(double x, double y) {
-    currentEraserStroke = new PdfWhiteoutBrushElement(documentState.getCurrentPage());
+    currentEraserStroke =
+        new PdfWhiteoutBrushElement(documentState, documentState.getCurrentPage());
     currentEraserStroke.setRadius(eraserRadius);
     currentEraserStroke.addPoint(x, y);
 

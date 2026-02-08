@@ -10,12 +10,14 @@ import javafx.scene.shape.StrokeLineCap;
 import javafx.scene.shape.StrokeLineJoin;
 
 public class PdfWhiteoutBrushElement implements PdfElement {
+  private final PdfDocumentState documentState;
 
   private final List<Point2D> points = new ArrayList<>();
   private double radius = 20;
   private final int page;
 
-  public PdfWhiteoutBrushElement(int page) {
+  public PdfWhiteoutBrushElement(PdfDocumentState documentState, int page) {
+    this.documentState = documentState;
     this.page = page;
   }
 
@@ -32,8 +34,10 @@ public class PdfWhiteoutBrushElement implements PdfElement {
   public void render(GraphicsContext gc, double zoom) {
     if (points.size() < 2) return;
 
+    double radiusPx = documentState.ptToPx(radius) * zoom;
+
     gc.setStroke(Color.WHITE);
-    gc.setLineWidth(radius * 2 * zoom);
+    gc.setLineWidth(radiusPx * 2);
     gc.setLineCap(StrokeLineCap.ROUND);
     gc.setLineJoin(StrokeLineJoin.ROUND);
 
@@ -42,8 +46,10 @@ public class PdfWhiteoutBrushElement implements PdfElement {
       Point2D p2 = points.get(i);
 
       gc.strokeLine(
-          p1.getX() * zoom, p1.getY() * zoom,
-          p2.getX() * zoom, p2.getY() * zoom);
+          documentState.pdfToCanvasX(p1.getX()) * zoom,
+          documentState.pdfToCanvasY(p1.getY()) * zoom,
+          documentState.pdfToCanvasX(p2.getX()) * zoom,
+          documentState.pdfToCanvasY(p2.getY()) * zoom);
     }
   }
 
@@ -62,5 +68,13 @@ public class PdfWhiteoutBrushElement implements PdfElement {
 
   public void setRadius(double radius) {
     this.radius = radius;
+  }
+
+  public List<Point2D> getPoints() {
+    return points;
+  }
+
+  public double getRadius() {
+    return radius;
   }
 }

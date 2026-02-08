@@ -7,6 +7,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 
 public class PdfTextElement implements PdfElement {
+  private final PdfDocumentState documentState;
 
   private final int page;
   private String text;
@@ -17,7 +18,8 @@ public class PdfTextElement implements PdfElement {
   private double fontSize = 12;
   private Color color = Color.BLACK;
 
-  public PdfTextElement(int page, String text, double x, double y) {
+  public PdfTextElement(PdfDocumentState documentState, int page, String text, double x, double y) {
+    this.documentState = documentState;
     this.page = page;
     this.text = text;
     this.x = x;
@@ -32,8 +34,13 @@ public class PdfTextElement implements PdfElement {
   @Override
   public void render(GraphicsContext gc, double zoom) {
     gc.setFill(color);
-    gc.setFont(Font.font(fontFamily, fontSize * zoom));
-    gc.fillText(text, x * zoom, y * zoom);
+    double fontSizePx = documentState.ptToPx(fontSize) * zoom;
+    gc.setFont(Font.font(fontFamily, fontSizePx));
+
+    double cx = documentState.pdfToCanvasX(x) * zoom;
+    double cy = documentState.pdfToCanvasY(y) * zoom;
+
+    gc.fillText(text, cx, cy);
   }
 
   @Override
@@ -50,10 +57,11 @@ public class PdfTextElement implements PdfElement {
 
   @Override
   public Bounds getBounds() {
-    double width = text.length() * fontSize * 0.55;
-    double height = fontSize;
+    double width = text.length() * fontSize * 0.6;
+    double ascent = fontSize * 0.8;
+    double descent = fontSize * 0.2;
 
-    return new BoundingBox(x, y - height, width, height);
+    return new BoundingBox(x, y - ascent, width, ascent + descent);
   }
 
   public void setText(String text) {
@@ -82,6 +90,14 @@ public class PdfTextElement implements PdfElement {
 
   public void setColor(Color color) {
     this.color = color;
+  }
+
+  public double getX() {
+    return x;
+  }
+
+  public double getY() {
+    return y;
   }
 
   public Color getColor() {

@@ -9,6 +9,7 @@ import javafx.geometry.Point2D;
 import javafx.scene.canvas.GraphicsContext;
 
 public class PdfDrawElement implements PdfElement {
+  private final PdfDocumentState documentState;
 
   private final int page;
   private final List<Point2D> points = new ArrayList<>();
@@ -16,7 +17,8 @@ public class PdfDrawElement implements PdfElement {
 
   private static final double HIT_BOX = 5.0;
 
-  public PdfDrawElement(int page) {
+  public PdfDrawElement(PdfDocumentState documentState, int page) {
+    this.documentState = documentState;
     this.page = page;
   }
 
@@ -33,12 +35,17 @@ public class PdfDrawElement implements PdfElement {
   public void render(GraphicsContext gc, double zoom) {
     if (points.size() < 2) return;
 
-    gc.setLineWidth(strokeWidth * zoom);
+    double strokeWidthPx = documentState.ptToPx(strokeWidth) * zoom;
+    gc.setLineWidth(strokeWidthPx);
 
-    Point2D prev = points.get(0);
+    Point2D prev = points.getFirst();
     for (int i = 1; i < points.size(); i++) {
       Point2D curr = points.get(i);
-      gc.strokeLine(prev.getX() * zoom, prev.getY() * zoom, curr.getX() * zoom, curr.getY() * zoom);
+      gc.strokeLine(
+          documentState.pdfToCanvasX(prev.getX()) * zoom,
+          documentState.pdfToCanvasY(prev.getY()) * zoom,
+          documentState.pdfToCanvasX(curr.getX()) * zoom,
+          documentState.pdfToCanvasY(curr.getY()) * zoom);
       prev = curr;
     }
   }
@@ -100,6 +107,14 @@ public class PdfDrawElement implements PdfElement {
     double distX = px - projX;
     double distY = py - projY;
     return Math.sqrt(distX * distX + distY * distY);
+  }
+
+  public List<Point2D> getPoints() {
+    return points;
+  }
+
+  public double getStrokeWidth() {
+    return strokeWidth;
   }
 
   public void setStrokeWidth(double strokeWidth) {

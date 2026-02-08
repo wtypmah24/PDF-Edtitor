@@ -37,7 +37,6 @@
         </StackPane>
     </top>
 
-
     <left>
         <VBox alignment="TOP_CENTER" opacity="0.77" spacing="10" style="-fx-background-color: #a9adb8;">
             <padding>
@@ -112,10 +111,12 @@
         </ScrollPane>
     </center>
 
-
     <bottom>
-        <Button onAction="#onOpenPdfClick" style="-fx-font-size: 16px; -fx-padding: 10 20 10 20;" text="Open PDF"
-                BorderPane.alignment="CENTER"/>
+        <HBox spacing="10" style="-fx-padding: 10;" alignment="CENTER">
+            <Button onAction="#onOpenPdfClick" text="Open PDF" style="-fx-font-size: 16px; -fx-padding: 10 20 10 20;"/>
+            <Region HBox.hgrow="ALWAYS"/>
+            <Button onAction="#onSavePdfClick" text="Save PDF" style="-fx-font-size: 16px; -fx-padding: 10 20 10 20;"/>
+        </HBox>
     </bottom>
 
     <padding>
