@@ -84,7 +84,7 @@ public class PdfSaveService {
   private void writeWhiteout(PDPageContentStream cs, PdfWhiteoutBrushElement erase)
       throws IOException {
 
-    cs.setNonStrokingColor(255, 255, 255);
+    cs.setNonStrokingColor(java.awt.Color.WHITE);
 
     for (Point2D p : erase.getPoints()) {
       float r = (float) erase.getRadius();

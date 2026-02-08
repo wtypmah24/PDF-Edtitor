@@ -68,7 +68,8 @@ public class PdfEditorInteractionManager {
 
   public void setTool(ToolMode tool) {
     if (tool == ToolMode.ERASE) {
-      currentEraserStroke = new PdfWhiteoutBrushElement(documentState.getCurrentPage());
+      currentEraserStroke =
+          new PdfWhiteoutBrushElement(documentState, documentState.getCurrentPage());
     }
     this.activeTool = tool;
     updateCursor();
@@ -102,20 +103,18 @@ public class PdfEditorInteractionManager {
         e -> {
           if (documentState == null) return;
 
-          double canvasX = e.getX();
-          double canvasY = e.getY();
+          double canvasX = e.getX() / documentState.getZoom();
+          double canvasY = e.getY() / documentState.getZoom();
 
           double pdfX = documentState.canvasToPdfX(canvasX);
           double pdfY = documentState.canvasToPdfY(canvasY);
-          System.out.println("canvasX: " + canvasX + ", canvasY: " + canvasY);
-          System.out.println("pdfX: " + pdfX + " pdfY: " + pdfY);
 
           switch (activeTool) {
             case DRAW -> startDrawing(pdfX, pdfY);
             case TEXT -> placeText(pdfX, pdfY);
             case ERASE -> startErasing(pdfX, pdfY);
             case DRAG -> startDragging(pdfX, pdfY);
-            case NONE -> selectElement(canvasX, canvasY); // 👈 важно
+            case NONE -> selectElement(canvasX, canvasY);
           }
         });
 
@@ -124,8 +123,8 @@ public class PdfEditorInteractionManager {
           e.consume();
           if (documentState == null) return;
 
-          double canvasX = e.getX();
-          double canvasY = e.getY();
+          double canvasX = e.getX() / documentState.getZoom();
+          double canvasY = e.getY() / documentState.getZoom();
 
           double pdfX = documentState.canvasToPdfX(canvasX);
           double pdfY = documentState.canvasToPdfY(canvasY);
@@ -311,7 +310,8 @@ public class PdfEditorInteractionManager {
   }
 
   private void startErasing(double x, double y) {
-    currentEraserStroke = new PdfWhiteoutBrushElement(documentState.getCurrentPage());
+    currentEraserStroke =
+        new PdfWhiteoutBrushElement(documentState, documentState.getCurrentPage());
     currentEraserStroke.setRadius(eraserRadius);
     currentEraserStroke.addPoint(x, y);
 

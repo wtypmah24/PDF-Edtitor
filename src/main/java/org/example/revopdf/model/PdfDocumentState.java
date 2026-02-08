@@ -51,23 +51,15 @@ public class PdfDocumentState {
   // ---------- coord mapping ----------
 
   public double canvasToPdfX(double canvasX) {
-    System.out.println("canvasWidthPx:  " + canvasWidthPx + ", pageWidthPt: " + pageWidthPt);
     return (canvasX / canvasWidthPx) * pageWidthPt;
   }
 
   public double canvasToPdfY(double canvasY) {
-    System.out.println(
-        "canvasHeightPx:  "
-            + canvasHeightPx
-            + ", canvasHeightPx: "
-            + canvasHeightPx
-            + ", pageHeightPt: "
-            + pageHeightPt);
     return ((canvasHeightPx - canvasY) / canvasHeightPx) * pageHeightPt;
   }
 
   public double ptToPx(double pt) {
-    return pt * PT_TO_PX ;
+    return pt * PT_TO_PX;
   }
 
   public double pdfToCanvasX(double pdfX) {
