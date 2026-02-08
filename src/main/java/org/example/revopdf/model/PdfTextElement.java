@@ -34,7 +34,7 @@ public class PdfTextElement implements PdfElement {
   @Override
   public void render(GraphicsContext gc, double zoom) {
     gc.setFill(color);
-    double fontSizePx = documentState.ptToPx(fontSize);
+    double fontSizePx = documentState.ptToPx(fontSize) * zoom;
     gc.setFont(Font.font(fontFamily, fontSizePx));
 
     double cx = documentState.pdfToCanvasX(x) * zoom;

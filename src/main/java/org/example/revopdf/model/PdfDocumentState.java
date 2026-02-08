@@ -67,7 +67,7 @@ public class PdfDocumentState {
   }
 
   public double ptToPx(double pt) {
-    return pt * PT_TO_PX * zoom;
+    return pt * PT_TO_PX ;
   }
 
   public double pdfToCanvasX(double pdfX) {
