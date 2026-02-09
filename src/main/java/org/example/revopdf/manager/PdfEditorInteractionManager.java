@@ -40,6 +40,7 @@ public class PdfEditorInteractionManager {
 
   private Runnable selectionChangedCallback = () -> {};
   private Runnable textSelectionChangedCallback;
+  private Runnable updatePageControls;
 
   private PdfWhiteoutBrushElement currentEraserStroke;
   private double eraserRadius = 20;
@@ -49,12 +50,14 @@ public class PdfEditorInteractionManager {
       ImageView pdfImageView,
       Runnable redrawCallback,
       Runnable selectionChangedCallback,
-      Runnable textSelectionChangedCallback) {
+      Runnable textSelectionChangedCallback,
+      Runnable updatePageControls) {
     this.canvas = canvas;
     this.pdfImageView = pdfImageView;
     this.redrawCallback = redrawCallback;
     this.selectionChangedCallback = selectionChangedCallback;
     this.textSelectionChangedCallback = textSelectionChangedCallback;
+    this.updatePageControls = updatePageControls;
     setupHandlers();
   }
 
@@ -272,11 +275,57 @@ public class PdfEditorInteractionManager {
       documentState = new PdfDocumentState(file);
       documentState.updateCanvasSize(canvas.getWidth(), canvas.getHeight());
       redrawCallback.run();
+      updatePageControls.run();
 
     } catch (IOException e) {
       new Alert(Alert.AlertType.ERROR, "Couldn't open PDF: " + e.getMessage(), ButtonType.OK)
           .showAndWait();
     }
+  }
+
+  public void nextPage() {
+    if (documentState == null) return;
+
+    int page = documentState.getCurrentPage();
+    if (page < documentState.getPageCount() - 1) {
+      documentState.setCurrentPage(page + 1);
+      Image pageImage = null;
+      try {
+        pageImage = pdfDocumentService.renderPage(documentState.getCurrentPage(), 150);
+        documentState.updateCanvasSize(canvas.getWidth(), canvas.getHeight());
+      } catch (IOException e) {
+        new Alert(Alert.AlertType.ERROR, "Couldn't change a page: " + e.getMessage(), ButtonType.OK)
+            .showAndWait();
+      }
+      pdfImageView.setImage(pageImage);
+      redrawCallback.run();
+      updatePageControls.run();
+    }
+  }
+
+  public void prevPage() {
+    if (documentState == null) return;
+
+    int page = documentState.getCurrentPage();
+    if (page > 0) {
+      documentState.setCurrentPage(page - 1);
+      Image pageImage = null;
+      try {
+        pageImage = pdfDocumentService.renderPage(documentState.getCurrentPage(), 150);
+        documentState.updateCanvasSize(canvas.getWidth(), canvas.getHeight());
+      } catch (IOException e) {
+        new Alert(Alert.AlertType.ERROR, "Couldn't change a page: " + e.getMessage(), ButtonType.OK)
+            .showAndWait();
+      }
+      pdfImageView.setImage(pageImage);
+      redrawCallback.run();
+      updatePageControls.run();
+    }
+  }
+
+  public void setPage(int page) {
+    documentState.setCurrentPage(page);
+    redrawCallback.run();
   }
 
   public void updateSelectedTextFontSize(double size) {

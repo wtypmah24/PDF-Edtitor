@@ -112,12 +112,37 @@
     </center>
 
     <bottom>
-        <HBox spacing="10" style="-fx-padding: 10;" alignment="CENTER">
-            <Button onAction="#onOpenPdfClick" text="Open PDF" style="-fx-font-size: 16px; -fx-padding: 10 20 10 20;"/>
+        <HBox spacing="10"
+              alignment="CENTER"
+              style="-fx-padding: 10;">
+
+            <Button text="Open PDF"
+                    onAction="#onOpenPdfClick"
+                    style="-fx-font-size: 16px; -fx-padding: 10 20;"/>
+
             <Region HBox.hgrow="ALWAYS"/>
-            <Button onAction="#onSavePdfClick" text="Save PDF" style="-fx-font-size: 16px; -fx-padding: 10 20 10 20;"/>
+
+            <!-- Page navigation -->
+            <Button text="◀"
+                    onAction="#onPrevPage"
+                    fx:id="prevPageButton"/>
+
+            <Label fx:id="pageLabel"
+                   text="1 / 1"
+                   style="-fx-font-size: 14px;"/>
+
+            <Button text="▶"
+                    onAction="#onNextPage"
+                    fx:id="nextPageButton"/>
+
+            <Region HBox.hgrow="ALWAYS"/>
+
+            <Button text="Save PDF"
+                    onAction="#onSavePdfClick"
+                    style="-fx-font-size: 16px; -fx-padding: 10 20;"/>
         </HBox>
     </bottom>
+
 
     <padding>
         <Insets bottom="10" left="10" right="10" top="10"/>

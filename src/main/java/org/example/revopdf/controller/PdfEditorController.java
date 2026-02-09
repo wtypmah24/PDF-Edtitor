@@ -29,6 +29,21 @@ public class PdfEditorController {
 
   @FXML private HBox eraserToolbar;
   @FXML private ComboBox<Integer> eraserSizeCombo;
+  @FXML private Label pageLabel;
+  @FXML private Button prevPageButton;
+  @FXML private Button nextPageButton;
+
+  @FXML
+  private void onPrevPage() {
+    interactionManager.prevPage();
+    updatePageControls();
+  }
+
+  @FXML
+  private void onNextPage() {
+    interactionManager.nextPage();
+    updatePageControls();
+  }
 
   @FXML
   protected void onOpenPdfClick() {
@@ -116,7 +131,8 @@ public class PdfEditorController {
         pdfImageView,
         this::redrawOverlay,
         this::updateToolbars,
-        this::syncTextToolbarWithSelection);
+        this::syncTextToolbarWithSelection,
+        this::updatePageControls);
 
     pdfImageView
         .boundsInParentProperty()
@@ -194,6 +210,24 @@ public class PdfEditorController {
       fontSizeSpinner.getValueFactory().setValue((int) text.getFontSize());
       textColorPicker.setValue(text.getColor());
     }
+  }
+
+  private void updatePageControls() {
+    var state = interactionManager.getDocumentState();
+    if (state == null) {
+      pageLabel.setText("");
+      prevPageButton.setDisable(true);
+      nextPageButton.setDisable(true);
+      return;
+    }
+
+    int page = state.getCurrentPage();
+    int total = state.getPageCount();
+
+    pageLabel.setText((page + 1) + " / " + total);
+
+    prevPageButton.setDisable(page == 0);
+    nextPageButton.setDisable(page == total - 1);
   }
 
   private void redrawOverlay() {
