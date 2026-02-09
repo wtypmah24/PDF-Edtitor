@@ -269,13 +269,11 @@ public class PdfEditorInteractionManager {
 
     try {
       pdfDocumentService.openDocument(file);
-      Image pageImage = pdfDocumentService.renderPage(0, 150);
-      pdfImageView.setImage(pageImage);
 
       documentState = new PdfDocumentState(file);
       documentState.updateCanvasSize(canvas.getWidth(), canvas.getHeight());
-      redrawCallback.run();
-      updatePageControls.run();
+
+      showPage(0);
 
     } catch (IOException e) {
       new Alert(Alert.AlertType.ERROR, "Couldn't open PDF: " + e.getMessage(), ButtonType.OK)
@@ -285,41 +283,33 @@ public class PdfEditorInteractionManager {
 
   public void nextPage() {
     if (documentState == null) return;
-
-    int page = documentState.getCurrentPage();
-    if (page < documentState.getPageCount() - 1) {
-      documentState.setCurrentPage(page + 1);
-      Image pageImage = null;
-      try {
-        pageImage = pdfDocumentService.renderPage(documentState.getCurrentPage(), 150);
-        documentState.updateCanvasSize(canvas.getWidth(), canvas.getHeight());
-      } catch (IOException e) {
-        new Alert(Alert.AlertType.ERROR, "Couldn't change a page: " + e.getMessage(), ButtonType.OK)
-            .showAndWait();
-      }
-      pdfImageView.setImage(pageImage);
-      redrawCallback.run();
-      updatePageControls.run();
-    }
+    showPage(documentState.getCurrentPage() + 1);
   }
 
   public void prevPage() {
     if (documentState == null) return;
+    showPage(documentState.getCurrentPage() - 1);
+  }
 
-    int page = documentState.getCurrentPage();
-    if (page > 0) {
-      documentState.setCurrentPage(page - 1);
-      Image pageImage = null;
-      try {
-        pageImage = pdfDocumentService.renderPage(documentState.getCurrentPage(), 150);
-        documentState.updateCanvasSize(canvas.getWidth(), canvas.getHeight());
-      } catch (IOException e) {
-        new Alert(Alert.AlertType.ERROR, "Couldn't change a page: " + e.getMessage(), ButtonType.OK)
-            .showAndWait();
-      }
+  private void showPage(int page) {
+    if (documentState == null) return;
+
+    if (page < 0 || page >= documentState.getPageCount()) return;
+
+    documentState.setCurrentPage(page);
+
+    try {
+      Image pageImage = pdfDocumentService.renderPage(page, 150);
       pdfImageView.setImage(pageImage);
+
+      documentState.updateCanvasSize(canvas.getWidth(), canvas.getHeight());
+
       redrawCallback.run();
       updatePageControls.run();
+
+    } catch (IOException e) {
+      new Alert(Alert.AlertType.ERROR, "Couldn't render page: " + e.getMessage(), ButtonType.OK)
+          .showAndWait();
     }
   }
 
