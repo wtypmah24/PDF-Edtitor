@@ -14,7 +14,7 @@ public class PdfDocumentState {
   private static final double PT_TO_PX = 150 / 72.0;
 
   private final File sourceFile;
-
+  private final int pageCount;
   private int currentPage = 0;
   private double zoom = 1.0;
 
@@ -32,7 +32,8 @@ public class PdfDocumentState {
   public PdfDocumentState(File sourceFile) {
     this.sourceFile = sourceFile;
     try (PDDocument document = Loader.loadPDF(sourceFile)) {
-      PDPage page = document.getPage(0);
+      this.pageCount = document.getNumberOfPages();
+      PDPage page = document.getPage(currentPage);
       PDRectangle mb = page.getMediaBox();
       this.pageWidthPt = mb.getWidth();
       this.pageHeightPt = mb.getHeight();
@@ -139,5 +140,13 @@ public class PdfDocumentState {
 
   public File getSourceFile() {
     return sourceFile;
+  }
+
+  public void setCurrentPage(int currentPage) {
+    this.currentPage = currentPage;
+  }
+
+  public int getPageCount() {
+    return pageCount;
   }
 }
